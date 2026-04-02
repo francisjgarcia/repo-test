@@ -12,8 +12,6 @@ jobs:
   setup:
     if: github.event.head_commit.message != 'Initial commit'
     uses: francisjgarcia/actions-templates/.github/workflows/wf-setup.yml@main
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # build:
   #   needs: setup
