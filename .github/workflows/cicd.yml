@@ -76,3 +76,27 @@ jobs:
       bump_type:         ${{ needs.setup.outputs.bump_type }}
       github_repository: ${{ github.repository }}
       changelog_entries: ${{ needs.setup.outputs.changelog_entries }}
+
+  deploy:
+      name: Deploy to server
+      needs: [setup, push, release]
+      if: needs.setup.outputs.tag_version != ''
+      uses: francisjgarcia/actions-templates/.github/workflows/wf-deploy.yml@main
+      with:
+        tag_version:       ${{ needs.setup.outputs.tag_version }}
+        github_repository: ${{ github.repository }}
+        containers: |
+          [
+            {
+              "name": "repo-test",
+              "image": "ghcr.io/${{ github.repository }}:${{ needs.setup.outputs.tag_version }}",
+              "network": "proxy",
+              "healthcheck_url": "http://localhost:5000/health",
+              "memory_limit": "512m",
+              "memory_reservation": "256m",
+              "env_vars": {
+                "FLASK_ENV": "production",
+                "FLASK_DEBUG": "false"
+              }
+            }
+          ]
