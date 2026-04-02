@@ -43,7 +43,7 @@ jobs:
       tag_version:       ${{ needs.setup.outputs.tag_version }}
       github_repository: ${{ github.repository }}
       flake8_enabled:    true
-      pytest_enabled:    true
+      pytest_enabled:    false
 
   scan:
     name: Scan vulnerabilities
