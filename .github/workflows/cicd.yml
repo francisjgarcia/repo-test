@@ -13,16 +13,17 @@ jobs:
     if: github.event.head_commit.message != 'Initial commit'
     uses: francisjgarcia/actions-templates/.github/workflows/wf-setup.yml@main
 
-  # build:
-  #   needs: setup
-  #   uses: francisjgarcia/actions-templates/.github/workflows/wf-build.yml@main
-  #   with:
-  #     tag_version:        ${{ needs.setup.outputs.tag_version }}
-  #     github_repository:  ${{ github.repository }}
-  #     author_name:        ${{ needs.setup.outputs.author_name }}
-  #     author_email:       ${{ needs.setup.outputs.author_email }}
-  #     repo_description:   ${{ needs.setup.outputs.repo_description }}
-  #     created_at:         ${{ needs.setup.outputs.created_at }}
+  build:
+    needs: setup
+    if: needs.setup.outputs.tag_version != ''
+    uses: francisjgarcia/actions-templates/.github/workflows/wf-build.yml@main
+    with:
+      tag_version:       ${{ needs.setup.outputs.tag_version }}
+      github_repository: ${{ github.repository }}
+      author_name:       ${{ needs.setup.outputs.author_name }}
+      author_email:      ${{ needs.setup.outputs.author_email }}
+      repo_description:  ${{ needs.setup.outputs.repo_description }}
+      created_at:        ${{ needs.setup.outputs.created_at }}
 
   # tests:
   #   needs: [setup, build]
