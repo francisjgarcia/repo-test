@@ -25,12 +25,15 @@ jobs:
       repo_description:  ${{ needs.setup.outputs.repo_description }}
       created_at:        ${{ needs.setup.outputs.created_at }}
 
-  # tests:
-  #   needs: [setup, build]
-  #   uses: francisjgarcia/actions-templates/.github/workflows/wf-tests.yml@main
-  #   with:
-  #     tag_version:       ${{ needs.setup.outputs.tag_version }}
-  #     github_repository: ${{ github.repository }}
+  tests:
+    needs: [setup, build]
+    if: needs.setup.outputs.tag_version != ''
+    uses: francisjgarcia/actions-templates/.github/workflows/wf-tests.yml@main
+    with:
+      tag_version:       ${{ needs.setup.outputs.tag_version }}
+      github_repository: ${{ github.repository }}
+      # flake8_enabled:    true
+      # pytest_enabled:    true
 
   # scan:
   #   needs: [setup, build]
