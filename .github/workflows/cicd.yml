@@ -76,3 +76,4 @@ jobs:
       bump_type:         ${{ needs.setup.outputs.bump_type }}
       github_repository: ${{ github.repository }}
       changelog_entries: ${{ needs.setup.outputs.changelog_entries }}
+
