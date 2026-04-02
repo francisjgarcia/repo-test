@@ -1,0 +1,61 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  setup:
+    if: github.event.head_commit.message != 'Initial commit'
+    uses: francisjgarcia/actions-templates/.github/workflows/wf-setup.yml@main
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    needs: setup
+    uses: francisjgarcia/actions-templates/.github/workflows/wf-build.yml@main
+    with:
+      tag_version:        ${{ needs.setup.outputs.tag_version }}
+      github_repository:  ${{ github.repository }}
+      author_name:        ${{ needs.setup.outputs.author_name }}
+      author_email:       ${{ needs.setup.outputs.author_email }}
+      repo_description:   ${{ needs.setup.outputs.repo_description }}
+      created_at:         ${{ needs.setup.outputs.created_at }}
+
+  tests:
+    needs: [setup, build]
+    uses: francisjgarcia/actions-templates/.github/workflows/wf-tests.yml@main
+    with:
+      tag_version:       ${{ needs.setup.outputs.tag_version }}
+      github_repository: ${{ github.repository }}
+
+  scan:
+    needs: [setup, build]
+    uses: francisjgarcia/actions-templates/.github/workflows/wf-scan.yml@main
+    with:
+      tag_version:       ${{ needs.setup.outputs.tag_version }}
+      github_repository: ${{ github.repository }}
+
+  push:
+    needs: [setup, tests, scan]
+    uses: francisjgarcia/actions-templates/.github/workflows/wf-push.yml@main
+    with:
+      tag_version:       ${{ needs.setup.outputs.tag_version }}
+      github_repository: ${{ github.repository }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    needs: [setup, push]
+    uses: francisjgarcia/actions-templates/.github/workflows/wf-release.yml@main
+    with:
+      tag_version:       ${{ needs.setup.outputs.tag_version }}
+      bump_type:         ${{ needs.setup.outputs.bump_type }}
+      github_repository: ${{ github.repository }}
+      changelog_entries: ${{ needs.setup.outputs.changelog_entries }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
