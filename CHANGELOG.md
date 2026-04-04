@@ -6,5 +6,3 @@
 ### ✨ New features
 
 * feat(ci): enhance CI/CD workflows with linting and PR validation ([c26f4bd](https://github.com/francisjgarcia/repo-test/commit/c26f4bd)) — Francis J. García
-
-

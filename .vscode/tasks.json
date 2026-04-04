@@ -1,0 +1,83 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Docker: Up (con logs)",
+      "type": "shell",
+      "command": "docker compose up --build",
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "close": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Up (detached)",
+      "type": "shell",
+      "command": "docker compose up -d --build",
+      "group": "build",
+      "presentation": { "reveal": "silent", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Down",
+      "type": "shell",
+      "command": "docker compose down",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: Rebuild sin caché",
+      "type": "shell",
+      "command": "docker compose build --no-cache",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "new" },
+      "problemMatcher": []
+    },
+    {
+      // ── Tests dentro del contenedor ─────────────────────────────────
+      "label": "Docker: Run tests",
+      "type": "shell",
+      "command": "docker compose run --rm api pytest tests/ -v --tb=short",
+      "group": { "kind": "test", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "new" },
+      "problemMatcher": []
+    },
+    {
+      // ── Tests con cobertura ─────────────────────────────────────────
+      "label": "Docker: Tests con coverage",
+      "type": "shell",
+      "command": "docker compose run --rm api pytest tests/ --cov=app --cov-report=term-missing",
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "new" },
+      "problemMatcher": []
+    },
+    {
+      // ── Shell interactiva ───────────────────────────────────────────
+      "label": "Docker: Abrir shell en contenedor",
+      "type": "shell",
+      "command": "docker compose exec api bash",
+      "presentation": { "reveal": "always", "panel": "new" },
+      "problemMatcher": []
+    },
+    {
+      // ── Logs en tiempo real ─────────────────────────────────────────
+      "label": "Docker: Logs (follow)",
+      "type": "shell",
+      "command": "docker compose logs -f api",
+      "presentation": { "reveal": "always", "panel": "new" },
+      "problemMatcher": []
+    },
+    {
+      // ── Limpieza total ──────────────────────────────────────────────
+      "label": "Docker: Limpiar todo (prune)",
+      "type": "shell",
+      "command": "docker compose down -v --remove-orphans && docker image prune -f",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "recommendations": [
+    // ── Python core ──────────────────────────────────────────────────
+    "ms-python.python",          // Soporte base de Python
+    "ms-python.pylance",         // Autocompletado e inferencia de tipos
+    "ms-python.debugpy",         // Debugger (necesario para attach a Docker)
+
+    // ── Linting y formateo ───────────────────────────────────────────
+    "charliermarsh.ruff",        // Linter + formatter ultra-rápido (reemplaza flake8+isort+black)
+
+    // ── Docker ───────────────────────────────────────────────────────
+    "ms-azuretools.vscode-docker",          // Explorer, gestión de imágenes y contenedores
+    "ms-vscode-remote.remote-containers",   // Dev Containers (opcional pero muy útil)
+
+    // ── Pruebas de API ───────────────────────────────────────────────
+    "humao.rest-client",         // Ejecuta peticiones HTTP desde ficheros .http directamente
+
+    // ── Ficheros de configuración ────────────────────────────────────
+    "tamasfe.even-better-toml",  // Soporte para pyproject.toml
+    "redhat.vscode-yaml",        // Soporte para docker-compose.yml y otros YAML
+
+    // ── Control de versiones ─────────────────────────────────────────
+    "eamodio.gitlens",           // Blame inline, historial, comparativas
+
+    // ── Productividad ────────────────────────────────────────────────
+    "streetsidesoftware.code-spell-checker", // Corrector ortográfico en código y comentarios
+    "usernamehw.errorlens"       // Muestra errores de linting inline en el editor
+  ]
+}

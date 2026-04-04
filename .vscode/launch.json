@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // ── Configuración principal: attach al contenedor ───────────────
+      "name": "🐳 Docker: Attach debugger",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5678          // Puerto que expone debugpy en docker-compose.yml
+      },
+      // ⚠️ Clave: mapea rutas locales ↔ rutas dentro del contenedor
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "/app"  // Donde está montado el código en Docker
+        }
+      ],
+      "justMyCode": true,       // false para depurar también librerías de terceros
+      "preLaunchTask": "Docker: Up (detached)" // Levanta el stack antes de attachar
+    },
+    {
+      // ── Attach para sesiones de tests con debugpy ──────────────────
+      "name": "🧪 Docker: Attach a tests",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5679           // Puerto separado para no mezclar con la app
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "/app"
+        }
+      ],
+      "justMyCode": false
+    }
+  ]
+}
