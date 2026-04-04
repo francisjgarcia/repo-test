@@ -1,0 +1,16 @@
+name: PR validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+
+jobs:
+  pr-validation:
+    name: Validate PR title
+    uses: francisjgarcia/actions-templates/.github/workflows/wf-pr-validation.yml@main
