@@ -5,6 +5,14 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
 
 permissions:
   contents: write
@@ -18,16 +26,29 @@ defaults:
     working-directory: .
 
 jobs:
+  lint:
+    name: Lint workflows
+    if: github.event_name == 'pull_request'
+    uses: francisjgarcia/actions-templates/.github/workflows/wf-lint.yml@main
+    with:
+      yamllint_paths: '.github/workflows/'
+
+  pr-validation:
+    name: Validate PR title
+    if: github.event_name == 'pull_request'
+    uses: francisjgarcia/actions-templates/.github/workflows/wf-pr-validation.yml@main
+
   setup:
     name: Setup environment
     if: |
+      github.event_name == 'push' &&
       github.event.head_commit.message != 'Initial commit' &&
       !startsWith(github.event.head_commit.message, 'docs: update CHANGELOG.md')
     uses: francisjgarcia/actions-templates/.github/workflows/wf-setup.yml@main
 
   build:
     name: Build image
-    needs: setup
+    needs: [setup]
     if: needs.setup.outputs.tag_version != ''
     uses: francisjgarcia/actions-templates/.github/workflows/wf-build.yml@main
     with:
@@ -47,7 +68,7 @@ jobs:
       tag_version:       ${{ needs.setup.outputs.tag_version }}
       github_repository: ${{ github.repository }}
       flake8_enabled:    true
-      pytest_enabled:    false
+      pytest_enabled:    true
 
   scan:
     name: Scan vulnerabilities
@@ -72,9 +93,12 @@ jobs:
 
   release:
     name: Tag and release
-    needs: [setup, push]
+    needs: [setup, tests, scan, push]
     if: needs.setup.outputs.tag_version != ''
     uses: francisjgarcia/actions-templates/.github/workflows/wf-release.yml@main
+    secrets:
+      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
     with:
       tag_version:       ${{ needs.setup.outputs.tag_version }}
       bump_type:         ${{ needs.setup.outputs.bump_type }}
@@ -83,7 +107,7 @@ jobs:
 
   deploy:
     name: Deploy to server
-    needs: [setup, push, release]
+    needs: [setup, tests, scan, push, release]
     if: needs.setup.outputs.tag_version != ''
     uses: francisjgarcia/actions-templates/.github/workflows/wf-deploy.yml@main
     with:
