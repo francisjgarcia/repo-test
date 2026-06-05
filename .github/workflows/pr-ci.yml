@@ -1,0 +1,48 @@
+name: PR CI
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  build:
+    name: Build image
+    uses: francisjgarcia/actions-templates/.github/workflows/wf-build.yml@main
+    with:
+      tag_version: ${{ github.sha }}
+      github_repository: ${{ github.repository }}
+      author_name: ${{ github.event.pull_request.user.login }}
+      author_email: ${{ github.event.pull_request.user.login }}@users.noreply.github.com
+      repo_description: "PR validation for ${{ github.repository }}"
+      created_at: ${{ github.event.pull_request.created_at }}
+
+  test:
+    name: Test application
+    needs: build
+    uses: francisjgarcia/actions-templates/.github/workflows/wf-tests.yml@main
+    with:
+      tag_version: ${{ github.sha }}
+      github_repository: ${{ github.repository }}
+      flake8_enabled: true
+      pytest_enabled: true
+
+  scan:
+    name: Scan vulnerabilities
+    needs: build
+    uses: francisjgarcia/actions-templates/.github/workflows/wf-scan.yml@main
+    with:
+      tag_version: ${{ github.sha }}
+      github_repository: ${{ github.repository }}
+      fail_on_critical: true
+      severity_cutoff: critical
+      only_fixed: true
