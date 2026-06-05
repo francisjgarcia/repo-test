@@ -1,6 +1,6 @@
 import sys
 import os
-from app import app
+from src.app import app
 
 
 def test_health():
