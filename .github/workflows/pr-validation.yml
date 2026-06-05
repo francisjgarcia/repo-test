@@ -1,7 +1,7 @@
 ---
 name: PR validation
 
-on:
+"on":
   pull_request:
     branches:
       - main
