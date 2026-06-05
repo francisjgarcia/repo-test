@@ -95,6 +95,9 @@ jobs:
     name: Tag and release
     needs: [setup, tests, scan, push]
     if: needs.setup.outputs.tag_version != ''
+    permissions:
+      contents: write
+      models: read
     uses: francisjgarcia/actions-templates/.github/workflows/wf-release.yml@main
     secrets:
       APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
