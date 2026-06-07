@@ -1,7 +1,7 @@
 ---
 name: PR validation
 
-"on":
+on:
   pull_request:
     branches:
       - main
@@ -10,6 +10,9 @@ name: PR validation
       - edited
       - synchronize
       - reopened
+
+permissions:
+  contents: read
 
 jobs:
   pr-validation:

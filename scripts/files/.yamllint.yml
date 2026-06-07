@@ -7,9 +7,23 @@ rules:
     level: warning
   indentation:
     spaces: 2
-  document-start:
-    level: disable
   trailing-spaces:
     level: error
+  document-start:
+    level: error
   truthy:
-    level: disable
+    level: warning
+    allowed-values: ['true', 'false', 'on', 'off']
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+  comments:
+    min-spaces-from-content: 1
+  colons:
+    max-spaces-before: 0
+    max-spaces-after: 1
+    level: error
+  new-line-at-end-of-file:
+    level: error
+  comments-indentation:
+    level: warning
