@@ -1,8 +1,8 @@
 {
-  // ─── GitHub Copilot — habilitar prompt files (.github/prompts/) ───────────
+  // ─── GitHub Copilot — enable prompt files (.github/prompts/) ─────────────
   "github.copilot.chat.experimental.codeGeneration.useInstructionFiles": true,
 
-  // Registra .github/prompts/ como fuente de comandos personalizados
+  // Register .github/prompts/ as a source of custom slash commands
   "chat.promptFiles": true,
   "chat.promptFilesLocations": {
     ".github/prompts": true

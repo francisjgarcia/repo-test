@@ -2,13 +2,13 @@
 # =============================================================================
 #  smart-commit.sh — Conventional Commits + auto-branch + push + GitHub PR
 #
-#  Uso    : bash scripts/smart-commit.sh
-#  Requiere: git, gh (GitHub CLI autenticado)
-#  Instala gh: https://cli.github.com
+#  Usage   : bash scripts/smart-commit.sh
+#  Requires: git, gh (GitHub CLI, authenticated)
+#  Install : https://cli.github.com
 # =============================================================================
 set -euo pipefail
 
-# ── Colores ───────────────────────────────────────────────────────────────────
+# ── Colours ───────────────────────────────────────────────────────────────────
 R='\033[0;31m' G='\033[0;32m' Y='\033[1;33m'
 B='\033[0;34m' C='\033[0;36m' W='\033[1m'   N='\033[0m'
 
@@ -20,63 +20,62 @@ ask()    { printf "   ${Y}%s${N}  " "$*"; }
 info()   { printf "   ${B}%s${N}\n" "$*"; }
 
 # ── Pre-flight checks ─────────────────────────────────────────────────────────
-command -v git &>/dev/null      || die "git no encontrado"
-command -v gh  &>/dev/null      || die "GitHub CLI no encontrado → https://cli.github.com"
-gh auth status &>/dev/null 2>&1 || die "gh no autenticado → ejecuta: gh auth login"
-[ -d ".git" ]                   || die "No es un repositorio git. Ejecuta desde la raíz del repo."
+command -v git &>/dev/null      || die "git not found"
+command -v gh  &>/dev/null      || die "GitHub CLI not found → https://cli.github.com"
+gh auth status &>/dev/null 2>&1 || die "gh not authenticated → run: gh auth login"
+[ -d ".git" ]                   || die "Not a git repository. Run from the repo root."
 
 printf "\n${C}${W}════════════════════════════════════════════════${N}\n"
 printf "${C}${W}   🚀  Smart Commit Workflow${N}\n"
 printf "${C}${W}════════════════════════════════════════════════${N}\n"
 
-# ── Estado del repositorio ────────────────────────────────────────────────────
-header "Estado del repositorio"
+# ── Repository state ──────────────────────────────────────────────────────────
+header "Repository state"
 
 BASE=$(git branch --show-current)
-ok "Rama actual (base de la PR): ${W}$BASE${N}"
+ok "Current branch (PR base): ${W}$BASE${N}"
 
 UNSTAGED=$(git diff --name-only; git ls-files --others --exclude-standard)
 STAGED=$(git diff --cached --name-only)
 
 if [ -z "$UNSTAGED" ] && [ -z "$STAGED" ]; then
-    warn "Sin cambios detectados. Nada que commitear."
-    exit 0
+    warn "No changes detected. Nothing to commit."; exit 0
 fi
 
 if [ -n "$UNSTAGED" ]; then
     echo ""
     git status --short
     echo ""
-    ask "¿Añadir todos los cambios al staging? [S/n]:"; read -r r
-    if [[ "${r:-S}" =~ ^[Ss]$ ]]; then
+    ask "Stage all changes? [Y/n]:"; read -r r
+    if [[ "${r:-Y}" =~ ^[Yy]$ ]]; then
         git add -A
-        ok "git add -A completado"
+        ok "git add -A done"
     fi
 fi
 
-git diff --cached --quiet && die "Staging vacío. Añade cambios con 'git add' primero."
+git diff --cached --quiet && die "Staging area is empty. Run 'git add' first."
 
 echo ""
 git diff --cached --stat | sed 's/^/   /'
 
-# ── Tipo de commit ────────────────────────────────────────────────────────────
-header "Tipo de commit"
+# ── Commit type ───────────────────────────────────────────────────────────────
+header "Commit type"
 
 TYPES=( feat  fix  chore  docs  style  refactor  test  perf  ci  build )
 DESCS=(
-    "Nueva funcionalidad"
-    "Corrección de bug"
-    "Mantenimiento / dependencias"
-    "Documentación"
-    "Formato (sin cambios de lógica)"
-    "Refactorización"
+    "New feature"
+    "Bug fix"
+    "Maintenance / dependencies"
+    "Documentation"
+    "Formatting (no logic changes)"
+    "Refactoring"
     "Tests"
-    "Rendimiento"
+    "Performance"
     "CI/CD / GitHub Actions"
-    "Sistema de build"
+    "Build system"
 )
 
-# Auto-detección basada en ficheros modificados
+# Auto-detect based on staged files
 FILES=$(git diff --cached --name-only)
 AUTO=3  # default: chore
 echo "$FILES" | grep -qE '\.(test|spec)\.(ts|tsx|js|jsx|py)$|__tests__/|/test_' && AUTO=7
@@ -95,41 +94,40 @@ for i in "${!TYPES[@]}"; do
 done
 
 echo ""
-ask "Selecciona [1-10] (Enter = $AUTO):"; read -r n
+ask "Select [1-10] (Enter = $AUTO):"; read -r n
 n=${n:-$AUTO}
 [[ "$n" =~ ^[1-9]$|^10$ ]] || n=$AUTO
 COMMIT_TYPE="${TYPES[$((n-1))]}"
-ok "Tipo: ${W}$COMMIT_TYPE${N}"
+ok "Type: ${W}$COMMIT_TYPE${N}"
 
 # ── Scope ─────────────────────────────────────────────────────────────────────
-header "Scope (módulo afectado)"
+header "Scope (affected module)"
 
-# Auto-detectar directorio más frecuente en los cambios
+# Auto-detect most frequent top-level directory in staged changes
 AUTO_SCOPE=$(git diff --cached --name-only \
     | awk -F'/' 'NF>1{print $1}' \
     | sort | uniq -c | sort -rn \
     | awk 'NR==1{print $2}')
-# Ignorar directorios genéricos
 [[ "$AUTO_SCOPE" =~ ^(src|lib|app|\.)$ ]] && AUTO_SCOPE=""
 
 HINT=""
-[ -n "$AUTO_SCOPE" ] && HINT=" — Enter = ${W}$AUTO_SCOPE${N}" || HINT=" — Enter para omitir"
-ask "Módulo (ej: auth, api, ui, db${HINT}):"; read -r SCOPE
+[ -n "$AUTO_SCOPE" ] && HINT=" — Enter = ${W}$AUTO_SCOPE${N}" || HINT=" — Enter to skip"
+ask "Module (e.g. auth, api, ui, db${HINT}):"; read -r SCOPE
 [ -z "$SCOPE" ] && SCOPE="${AUTO_SCOPE:-}"
-ok "Scope: ${W}${SCOPE:-ninguno}${N}"
+ok "Scope: ${W}${SCOPE:-none}${N}"
 
-# ── Descripción ───────────────────────────────────────────────────────────────
-header "Descripción del commit"
-info "Usa el imperativo: 'add feature' no 'added feature'. Minúsculas, sin punto al final."
-ask "Descripción:"; read -r DESC
-[ -z "$DESC" ] && die "La descripción no puede estar vacía"
+# ── Description ───────────────────────────────────────────────────────────────
+header "Commit description"
+info "Use imperative mood: 'add feature' not 'added feature'. Lowercase, no trailing period."
+ask "Description:"; read -r DESC
+[ -z "$DESC" ] && die "Description cannot be empty"
 
-# Normalizar: minúsculas, trim, sin punto final
+# Normalise: lowercase, trim, strip trailing period
 DESC=$(printf '%s' "$DESC" \
     | tr '[:upper:]' '[:lower:]' \
     | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/\.$//')
 
-# Construir mensaje de commit
+# Build commit message
 if [ -n "$SCOPE" ]; then
     MSG="${COMMIT_TYPE}(${SCOPE}): ${DESC}"
 else
@@ -137,93 +135,90 @@ else
 fi
 
 echo ""
-ok "Mensaje generado: ${W}$MSG${N}"
+ok "Commit message: ${W}$MSG${N}"
 
-# ── Nombre de la rama ─────────────────────────────────────────────────────────
-header "Nombre de la rama"
+# ── Branch name ───────────────────────────────────────────────────────────────
+header "Branch name"
 
-# Generar slug desde la descripción
 SLUG=$(printf '%s' "$DESC" \
     | tr '[:upper:]' '[:lower:]' \
-    | sed 's/[áàäâ]/a/g;s/[éèëê]/e/g;s/[íìïî]/i/g;s/[óòöô]/o/g;s/[úùüû]/u/g;s/[ñ]/n/g' \
     | sed 's/[^a-z0-9 -]//g' \
     | tr ' ' '-' \
     | sed 's/--*/-/g;s/^-//;s/-$//' \
     | cut -c1-42)
 
 SUGGESTED="${COMMIT_TYPE}/${SLUG}"
-ok "Sugerida: ${W}$SUGGESTED${N}"
-ask "Enter para aceptar, o escribe otro nombre:"; read -r BRANCH
+ok "Suggested: ${W}$SUGGESTED${N}"
+ask "Press Enter to accept or type a different name:"; read -r BRANCH
 BRANCH="${BRANCH:-$SUGGESTED}"
 
-# Comprobar que la rama no existe ya
+# Check for local name collision
 if git show-ref --verify --quiet "refs/heads/$BRANCH" 2>/dev/null; then
-    warn "La rama '${W}$BRANCH${N}' ya existe localmente."
-    ask "Escribe un nombre diferente:"; read -r BRANCH
-    [ -z "$BRANCH" ] && die "Nombre de rama requerido"
+    warn "Branch '${W}$BRANCH${N}' already exists locally."
+    ask "Type a different name:"; read -r BRANCH
+    [ -z "$BRANCH" ] && die "Branch name is required"
 fi
 
-# ── Operaciones git ───────────────────────────────────────────────────────────
-header "Ejecutando git"
+# ── Git operations ────────────────────────────────────────────────────────────
+header "Running git"
 
-info "Creando rama ${W}$BRANCH${N}..."
+info "Creating branch ${W}$BRANCH${N}..."
 git checkout -b "$BRANCH"
 
-info "Commiteando: ${W}$MSG${N}"
+info "Committing: ${W}$MSG${N}"
 git commit -m "$MSG"
 
-info "Push → origin/${W}$BRANCH${N}"
+info "Pushing → origin/${W}$BRANCH${N}"
 git push -u origin "$BRANCH"
-ok "Push completado ✓"
+ok "Push complete ✓"
 
 # ── Pull Request ──────────────────────────────────────────────────────────────
 header "Pull Request"
 
-ask "¿Crear PR automáticamente? [S/n]:"; read -r cpr
-if [[ "${cpr:-S}" =~ ^[Ss]$ ]]; then
+ask "Create PR now? [Y/n]:"; read -r cpr
+if [[ "${cpr:-Y}" =~ ^[Yy]$ ]]; then
 
-    # Leer template si existe
     if [ -f ".github/PULL_REQUEST_TEMPLATE.md" ]; then
-        ok "Template encontrado: .github/PULL_REQUEST_TEMPLATE.md"
+        ok "Using template: .github/PULL_REQUEST_TEMPLATE.md"
         BODY=$(cat ".github/PULL_REQUEST_TEMPLATE.md")
     else
-        warn "No se encontró .github/PULL_REQUEST_TEMPLATE.md — usando body básico"
+        warn ".github/PULL_REQUEST_TEMPLATE.md not found — using basic body"
         CHANGED_FILES=$(git diff --name-only "origin/$BASE...$BRANCH" 2>/dev/null \
             || git diff --cached --name-only)
-        BODY="## Descripción
+        BODY="## Description
 
 ${MSG}
 
-## Tipo de cambio
+## Type of change
 
 - [x] \`${COMMIT_TYPE}\`
 
-## Ficheros modificados
+## Modified files
 
 \`\`\`
 ${CHANGED_FILES}
 \`\`\`"
     fi
 
-    info "Creando PR en GitHub..."
+    info "Opening PR on GitHub..."
     PR_URL=$(gh pr create \
-        --title   "$MSG" \
-        --body    "$BODY" \
-        --base    "$BASE" \
+        --title    "$MSG" \
+        --body     "$BODY" \
+        --base     "$BASE" \
         --assignee "@me")
 
-    # ── Resumen final ─────────────────────────────────────────────────────────
+    # ── Final summary ─────────────────────────────────────────────────────────
     printf "\n${G}${W}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${N}\n"
-    printf "${G}${W}   ✅  Workflow completado con éxito${N}\n"
+    printf "${G}${W}   ✅  Workflow completed successfully${N}\n"
     printf "${G}${W}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${N}\n"
     printf "\n   📝  Commit : ${W}%s${N}\n" "$MSG"
-    printf "   🌿  Rama   : ${W}%s${N}  →  ${W}%s${N}\n" "$BRANCH" "$BASE"
+    printf "   🌿  Branch : ${W}%s${N}  →  ${W}%s${N}\n" "$BRANCH" "$BASE"
     printf "   🔗  PR     : ${W}%s${N}\n" "$PR_URL"
     printf "\n${G}${W}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${N}\n\n"
 
 else
     echo ""
-    warn "Para crear la PR manualmente:"
+    warn "To create the PR manually:"
     printf "   gh pr create --title \"%s\" --base \"%s\" --assignee \"@me\"\n" "$MSG" "$BASE"
     echo ""
 fi

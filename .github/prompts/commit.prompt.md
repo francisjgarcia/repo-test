@@ -1,16 +1,16 @@
 ---
 agent: 'agent'
 tools: ['web/githubRepo']
-description: 'Commit convencional + rama automática + push + PR desde template'
+description: 'Conventional commit + auto-branch + push + PR from template'
 ---
 
-Eres un asistente experto en flujos de trabajo git. Ejecuta los siguientes pasos **en orden y de forma autónoma**, sin hacer preguntas al usuario a menos que sea estrictamente necesario.
+You are an expert git workflow assistant. Execute the following steps **in order and autonomously**, without asking the user questions unless strictly necessary.
 
 ---
 
-## PASO 1 — Analiza el estado del repositorio
+## STEP 1 — Read the repository state
 
-Ejecuta estos comandos uno a uno y memoriza los resultados:
+Run these commands one by one and memorize the results:
 
 ```bash
 git branch --show-current
@@ -19,46 +19,46 @@ git diff --staged
 git diff
 ```
 
-> ⚠️ Guarda la **rama actual** como `BASE_BRANCH`. Es la base de la futura PR.
+> ⚠️ Save the **current branch** as `BASE_BRANCH`. This will be the base of the PR.
 
-Si no hay ningún cambio (staged ni unstaged), informa al usuario y detente.
+If there are no changes (neither staged nor unstaged), inform the user and stop.
 
-Si hay cambios **sin staging** (unstaged o untracked), ejecútalos primero:
+If there are **unstaged changes** (unstaged or untracked files), stage them first:
 ```bash
 git add -A
 ```
 
 ---
 
-## PASO 2 — Genera el mensaje de commit
+## STEP 2 — Generate the commit message
 
-Analiza los ficheros modificados y el contenido del diff para elegir el tipo correcto:
+Analyze the modified files and the diff content to pick the correct type:
 
-| Tipo | Cuándo usarlo |
-|------|--------------|
-| `feat` | Nueva funcionalidad visible para el usuario |
-| `fix` | Corrección de bug o comportamiento incorrecto |
-| `chore` | Mantenimiento, dependencias, configuración interna |
-| `docs` | Solo cambios en documentación o comentarios |
-| `style` | Formato, espacios, punto y coma (sin cambios de lógica) |
-| `refactor` | Reestructuración de código sin nueva funcionalidad ni fix |
-| `test` | Tests nuevos o corrección de tests existentes |
-| `perf` | Mejora de rendimiento |
-| `ci` | GitHub Actions, pipelines, scripts de CI/CD |
-| `build` | Bundlers, compiladores, sistema de build |
-| `revert` | Revertir un commit anterior |
+| Type | When to use |
+|------|-------------|
+| `feat` | New functionality visible to the user |
+| `fix` | Bug fix or incorrect behaviour |
+| `chore` | Maintenance, dependencies, internal config |
+| `docs` | Documentation or comment changes only |
+| `style` | Formatting, whitespace, semicolons (no logic changes) |
+| `refactor` | Code restructuring without new feature or bug fix |
+| `test` | New or updated tests |
+| `perf` | Performance improvement |
+| `ci` | GitHub Actions, pipelines, CI/CD scripts |
+| `build` | Bundlers, compilers, build system |
+| `revert` | Revert a previous commit |
 
-**Formato obligatorio:**
+**Required format:**
 ```
-<tipo>(<scope>): <descripción en imperativo y minúsculas>
+<type>(<scope>): <description in imperative mood and lowercase>
 ```
 
-**Reglas de redacción:**
-- `scope` = módulo o área principal afectada en camelCase o kebab-case (auth, userApi, checkout, db…). **Omítelo** si el cambio es global o afecta a múltiples módulos sin uno dominante.
-- Descripción: verbo en **imperativo presente** ("add" no "added", "fix" no "fixed"), **minúsculas**, sin punto al final, máximo **72 caracteres** en la primera línea.
-- Si hay breaking changes: usa `<tipo>!: <descripción>` y añade `BREAKING CHANGE: <explicación>` en el body.
+**Writing rules:**
+- `scope` = main module or area affected, in camelCase or kebab-case (auth, userApi, checkout, db…). **Omit it** if the change is global or spans multiple modules without a dominant one.
+- Description: **present imperative** verb ("add" not "added", "fix" not "fixed"), **lowercase**, no trailing period, max **72 characters** on the first line.
+- For breaking changes: use `<type>!: <description>` and add `BREAKING CHANGE: <explanation>` in the commit body.
 
-**Ejemplos válidos:**
+**Valid examples:**
 ```
 feat(auth): add JWT refresh token rotation
 fix(api): handle null response from payment gateway
@@ -71,19 +71,19 @@ ci: add automated release workflow
 
 ---
 
-## PASO 3 — Genera el nombre de la rama
+## STEP 3 — Generate the branch name
 
-Crea el nombre de la rama partiendo desde `BASE_BRANCH`.
+Create the branch name starting from `BASE_BRANCH`.
 
-**Formato:** `<tipo>/<descripcion-en-kebab-case>`
+**Format:** `<type>/<description-in-kebab-case>`
 
-**Reglas:**
-- Solo minúsculas, números y guiones (`-`). Sin underscores ni puntos.
-- Máximo **50 caracteres** totales.
-- Debe ser descriptivo y legible de un vistazo.
-- Deriva de las palabras clave de la descripción del commit.
+**Rules:**
+- Lowercase letters, numbers, and hyphens (`-`) only. No underscores or dots.
+- Max **50 characters** total.
+- Must be descriptive and readable at a glance.
+- Derived from the key words of the commit description.
 
-**Ejemplos:**
+**Examples:**
 ```
 feat/jwt-refresh-token-rotation
 fix/payment-gateway-null-response
@@ -94,59 +94,59 @@ ci/automated-release-workflow
 
 ---
 
-## PASO 4 — Ejecuta las operaciones git
+## STEP 4 — Execute the git operations
 
 ```bash
-# Crear la nueva rama desde la rama actual (BASE_BRANCH)
-git checkout -b <NOMBRE_RAMA>
+# Create the new branch from the current branch (BASE_BRANCH)
+git checkout -b <BRANCH_NAME>
 
-# Realizar el commit con el mensaje generado
-git commit -m "<MENSAJE_COMMIT>"
+# Commit with the generated message
+git commit -m "<COMMIT_MESSAGE>"
 
-# Hacer push y enlazar con el remoto
-git push -u origin <NOMBRE_RAMA>
+# Push and link to remote
+git push -u origin <BRANCH_NAME>
 ```
 
-Si algún paso falla, analiza el error, corrígelo y continúa.
+If any step fails, analyse the error, fix it, and continue.
 
 ---
 
-## PASO 5 — Crea la Pull Request
+## STEP 5 — Create the Pull Request
 
-**5a. Lee el template de PR:**
+**5a. Read the PR template:**
 ```bash
 cat .github/PULL_REQUEST_TEMPLATE.md
 ```
 
-**5b. Rellena el template** con información real y concreta extraída de los cambios analizados en el PASO 1:
-- No dejes secciones vacías ni con texto placeholder genérico.
-- Basa las descripciones en lo que realmente cambia en el diff.
-- Si el template tiene checkboxes de tipo de cambio, marca el correcto según el tipo de commit.
-- Si el template pide contexto, screenshots o pasos de testing, incluye lo que sea relevante.
+**5b. Fill in the template** with real, concrete information extracted from the changes analysed in STEP 1:
+- Do not leave any section empty or with generic placeholder text.
+- Base descriptions on what actually changes in the diff.
+- If the template has change-type checkboxes, tick the correct one based on the commit type.
+- If the template asks for context, screenshots, or testing steps, include what is relevant.
 
-**5c. Crea la PR:**
+**5c. Create the PR:**
 ```bash
 gh pr create \
-  --title "<MENSAJE_COMMIT>" \
-  --body "<TEMPLATE_COMPLETAMENTE_RELLENADO>" \
+  --title "<COMMIT_MESSAGE>" \
+  --body "<FULLY_FILLED_TEMPLATE>" \
   --base <BASE_BRANCH> \
   --assignee "@me"
 ```
 
-Si no existe `.github/PULL_REQUEST_TEMPLATE.md`, genera un body básico con: descripción de los cambios, tipo de change y ficheros modificados.
+If `.github/PULL_REQUEST_TEMPLATE.md` does not exist, generate a basic body with: change description, commit type, and list of modified files.
 
 ---
 
-## RESUMEN FINAL
+## FINAL SUMMARY
 
-Al terminar, muestra este bloque de resumen:
+When done, display this summary block:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅  Workflow completado
+✅  Workflow completed
 
-📝  Commit : <tipo>(<scope>): <descripción>
-🌿  Rama   : <nombre-rama>  →  <BASE_BRANCH>
-🔗  PR     : <url-de-la-pr>
+📝  Commit : <type>(<scope>): <description>
+🌿  Branch : <branch-name>  →  <BASE_BRANCH>
+🔗  PR     : <pull-request-url>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
